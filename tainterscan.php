@@ -1,11 +1,10 @@
-<?php 
+<?php
 
-// lib 
+// lib
 require("vendor/autoload.php"); 
 use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter;
-
 
 echo "v0.00 PHP simple tainterscanner \n"; 
 echo "usage $argv[0] file.php \n\n\n"; 
@@ -13,57 +12,88 @@ echo "usage $argv[0] file.php \n\n\n";
 $code = file_get_contents($argv[1]);
  
 //echo "Node Dumper\n";
-
 $parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_PHP7);
 $nodeDumper = new PhpParser\NodeDumper;
 
 echo "[DEBUG] Pretty print Node dumper from PHPParser \n\n"; 
 try {
     $stmts = $parser->parse($code);
-    var_dump($stmts);
-//    echo $nodeDumper->dump($stmts), "\n";
+    //var_dump($stmts);
+    echo $nodeDumper->dump($stmts), "\n";
 } catch (PhpParser\Error $e) {
     echo 'Parse Error: ', $e->getMessage();
-};
+  };
 
 
-// var_dump($stmts);
+//echo(array_key_exists("_GET",$stmts));
+echo "Searching for tainted inputs by walking recursively the PHPParser array \n"; 
+
+// SCAN FUNCTIOM HERE
+
+//array_walk_recursive($stmts, 'test_print');
+array_walk($stmts, 'is_tainted');
+
+
+
+
 
 function is_tainted($item, $key)
 {
-echo "[DEBUG] function is_tainted started \n"; 
 
-// debug 
-echo "[DEBUG] var dumps of the item \n";
-var_dump($item); 
-//var_dump($key); 
-//the array contains an object so need to call recursively the function is_tainted on it :( 
+echo "[DEBUG] function is_tainted started on \n";
+var_dump($item);
+echo "DEBUG start taint scan \n"; 
 
-if (is_object($item)) 
-{ foreach ($item as $objectkey => $value) {
-	// $item an object and we are parsing it recursively; 
-	if ($value == "_GET") // replace with all user inputs source 
+if ($item == "_GET"){ echo "detection without iteration !! TAINTED !!\n"; } 
+
+
+foreach ($item as $objectkey => $value) {
+	// 
+	echo "iterating the array for value scan ...\n"; 
+	if ($value == "_GET"){
+
+// replace with all user inputs source 
 // we need to code a function for taint detection
-// need to get the full path of this input (Obj > x > y > z); 
-	{ 
-	echo "IS TAINTED DETECTED !!! >>>> "; 
-	var_dump($value); 
-	echo ("in the objet " . var_dump($item)); var_dump($item -> $objectkey); 
-	}
+// need to get the full path of this input (Obj > x > y > z);
+
+	echo "IS TAINTED DETECTED !!! >>>> ";
+	    var_dump($value); 
+	    echo ("in the objet " . var_dump($item));
+            var_dump($item -> $objectkey); 
 	
-array_walk_recursive($item,"is_tainted");
-}}; 
+						}
+}; 
+
+
+if (is_object($item))
+{
+	echo "this is an object !\n";
+	echo "[DEBUG] recursion on object \n";	
+	array_walk($item,'is_tainted');
+};
+
+if (is_array($item))
+{ 
+	array_walk_recursive($item,'is_tainted');
+	echo "[DEBUG] recursion on array \n";	    
+}; 
+	    
+ 
+  }; // end of function  
 
 
 
+
+function test_print($item, $key)
+{
+    //echo "$key holds $item\n";
+    var_dump($item);
 }
 
-echo "Searching for tainted inputs by walking recursively the PHPParser array \n"; 
 
-//echo(array_key_exists("_GET",$stmts));
+function is_user_tainted()
+{
+// $_ variables , load from config etc ...
+} 
 
-// SCAN FUNCTIOM HERE 
-array_walk_recursive($stmts, 'is_tainted');
 
-//$prettyPrinter = new PrettyPrinter\Standard();
-//echo $prettyPrinter->prettyPrintFile($stmts);
