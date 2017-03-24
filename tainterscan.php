@@ -28,7 +28,7 @@ try {
 echo "Searching for tainted inputs by walking recursively the PHPParser array \n"; 
 
 // SCAN FUNCTIOM HERE
-//**
+
 //array_walk_recursive($stmts, 'test_print');
 array_walk($stmts, 'is_tainted');
 
