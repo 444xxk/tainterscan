@@ -38,10 +38,6 @@ array_walk($stmts, 'is_tainted');
 
 
 
-
-//------------------------Functions----------------------------//
-
-
 function is_tainted($item, $key)
 {
 
