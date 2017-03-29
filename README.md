@@ -8,4 +8,4 @@ Compared to RIPS, WAP.jar or similar scanner, this script will try to be simpler
 
 How to use:
 
-php tainterscan.php test/simple.php
+   php tainterscan.php test/simple.php
