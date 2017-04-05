@@ -1,0 +1,41 @@
+# this is an example of the stack we want to extract
+
+
+array(2) {
+  [1]=>
+  object(PhpParser\Node\Expr\Print_)#16 (2) {
+    ["expr"]=>
+    object(PhpParser\Node\Expr\FuncCall)#15 (3) {
+      ["name"]=>
+      object(PhpParser\Node\Name)#9 (2) {
+        ["parts"]=>
+        array(1) {
+          [0]=>
+          string(10) "shell_exec"
+        }
+        ["attributes":protected]=>
+        array(2) {
+          ["startLine"]=>
+          int(6)
+          ["endLine"]=>
+          int(6)
+        }
+      }
+      ["args"]=>
+      array(1) {
+        [0]=>
+        object(PhpParser\Node\Arg)#14 (4) {
+          ["value"]=>
+          object(PhpParser\Node\Expr\ArrayDimFetch)#13 (3) {
+            ["var"]=>
+            object(PhpParser\Node\Expr\Variable)#10 (2) {
+              ["name"]=>
+              string(4) "_GET"
+              ["attributes":protected]=>
+              array(2) {
+                ["startLine"]=>
+                int(6)
+                ["endLine"]=>
+                int(6)
+              }
+            }
