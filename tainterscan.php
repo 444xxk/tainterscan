@@ -5,41 +5,21 @@ require("vendor/autoload.php");
 use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter;
+
+# config
 require __DIR__.'/conf/input.php';
 
-
-echo "v0.00 PHP simple tainterscanner\n";
-echo "usage $argv[0] file.php [debug] \n\n\n";
-
-
-# getting the file to scan
-# TODO scan a folder recursively
-$code = file_get_contents($argv[1]);
-
-# start phpparser
-$parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_PHP7);
-
-$debug = false;
-
-try {
-    $stmts = $parser->parse($code);
-    if ($argv[2] == "debug"){ $debug = true; echo "[DEBUG] Printing the full PHPParser array :\n"; var_dump($stmts);}
-} catch (PhpParser\Error $e) {
-    echo 'Parse Error: ', $e->getMessage();
-  };
+#### BANNER
+echo "v0.01 PHP simple tainterscanner\n";
+echo "Usage: $argv[0] file.php [debug] \n\n\n";
 
 
-# START SCAN FUNCTION HERE , entry is an array from phpparser
-echo "Searching for tainted inputs by walking recursively the PHPParser array \n\n";
-# main function
-walk_phpparser_array($stmts);
-
-
-
+##### FUNCTIONS
 
 ############## FUNCTIONS
 
 # key is the element and item is the value of the element
+# this function walks the php parser array
 function walk_phpparser_array($phpparserarray)
 {
 $stack = array();
@@ -49,7 +29,7 @@ $branches = 0;
  foreach ($phpparserarray as $key => $item)
  {
  $branches = $branches +1;
- print "NEW BRANCH # $branches, new stack is created. \n";
+ print "BRANCH #$branches, new stack is created. \n";
  # new stack
  unset($stack);
  $stack = array();
@@ -59,17 +39,17 @@ $branches = 0;
  }
 }
 
-# function which checks if there is user input inside
+
+# function which checks if there is the branch is tainted by user input
 # item is the value, key is the name of the element
 function check_user_input($item, $key, $stack)
 {
-# check tainting
+# check tainting directly on the item
  is_it_tainted($item,$key,$stack);
 
+# if is object or array we continue to parse it
  if (is_object($item) || is_array($item))
- {
- # useless call i think
- # is_it_tainted($item,$key,$stack);
+{
  foreach ($item as $subkey => $subitem)
  {
  array_push($stack,$subitem);
@@ -91,9 +71,8 @@ function is_it_tainted($value,$key,$stack)
   if (in_array($value,$inputArr))
   {
     {
-    echo "WARNING ! Tainted value detected. \n";
-    print "Detected tainted source : $value \n";
-    print "The stack to here is: \n";
+    echo "TAINT SOURCE FOUND: a taint source (taint) $value was found. \n";
+    print "The stack to this source is: \n";
     print_r($stack);
 
     if ($debug == true){ print "[DEBUG] full stack \n"; var_dump($stack);}
@@ -102,8 +81,8 @@ function is_it_tainted($value,$key,$stack)
 
 # if is_dangerous && ! is_sanitized then VULN FOUND
 
-    is_dangerous_sink($stack);
-    //is_sanitized($stack);
+    is_dangerous_sink($stack,$value);
+    is_sanitized($stack,$value);
 
     unset($stack);
     }
@@ -111,36 +90,78 @@ function is_it_tainted($value,$key,$stack)
 }
 
 
-function is_sanitized($array)
+# function checking if stack is sanitized
+function is_sanitized($stacktowalk,$taintsource)
 {
-# if the stack goes through a sanitizer we stop
-}
 
 
-function is_dangerous_sink($stack)
+foreach ($stacktowalk as $key => $item)
 {
-# need to walk the array
-
-
-# if object is PHP Parser \ Object \ Include
-
-# if object is PHP Parser \ Object \ FuncCall
-foreach ($stack as $key => $item)
-{
-  # add dangerous functions based on config
-  if ($item == "shell_exec")
+  # add sanitized function based on config or pre-scan
+  if ($item == "escapeshellarg")
   {
-    print "VULNERABILITY FOUND: a dangerous function (sink) $item which is tainted by user input. \n";
+    print "SANITIZER FOUND: a sanitizer function (san) $item sanitized user input $taintsource . \n";
   }
 }
 
 
+}
 
-function vuln_info($input,$sink)
+# this function checks if the tainted input goes to a dangerous sink function
+function is_dangerous_sink($stacktowalk,$taintsource)
 {
-  print "$_GET linked to echo gives XSS";
+# need to make a difference between FuncCall and other ?
+
+# need to detect include with
+# if object is PHP Parser \ Object \ Include
+# if object is PHP Parser \ Object \ FuncCall
+
+foreach ($stacktowalk as $key => $item)
+{
+  # add dangerous functions based on config
+  if ($item == "shell_exec")
+  {
+    print "DANGEROUS FUNCTION FOUND: a dangerous function (dan) $item was found to be tainted by user input $taintsource . \n";
+  }
+}
+
+
+# this function explains the found vulnerability
+function explain_vuln($input,$sink)
+{
+  $vulnerabilitieskdb = array();
+  print "$input linked to $sink and unsanitized gives XSS";
 # linking $input to $sink gives X vuln;
 # example $_GET to echo  is XSS vulnerability;
 }
 
+##### END FUNCTIONS
+
+
+
+
+##### MAIN FUNCTION
+# getting the file to scan
+# TODO scan a folder recursively
+$code = file_get_contents($argv[1]);
+
+# start phpparser
+$parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_PHP7);
+
+$debug = false;
+
+try {
+    $stmts = $parser->parse($code);
+    if ($argv[2] == "debug"){ $debug = true; echo "[DEBUG] Printing the full PHPParser array :\n"; var_dump($stmts);}
+} catch (PhpParser\Error $e) {
+    echo 'Parse Error: ', $e->getMessage();
+  };
+
+
+# START SCAN FUNCTION HERE , entry is an array from phpparser
+echo "Searching for tainted inputs by walking recursively the PHPParser array \n\n";
+# main function start
+walk_phpparser_array($stmts);
 };
+
+# END
