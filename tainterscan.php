@@ -19,20 +19,23 @@ echo "Usage: $argv[0] file.php [debug] \n\n\n";
 # this function walks the php parser array
 function walk_phpparser_array($phpparserarray)
 {
-#tainted variables
+
+#tainted variables global vars
 global $taintedvariables;
 $stack = array();
+
 # counting branches
 $branches = 0;
 
  foreach ($phpparserarray as $key => $item)
  {
  $branches = $branches +1;
- print "BRANCH #$branches, new stack is created. \n";
+ $branchtype = $item->getType();
+ print "BRANCH #$branches of type $branchtype, new stack is created. \n";
  # new stack
  unset($stack);
  $stack = array();
- # push first item to stack
+ # push first item of the branch to stack
  array_push($stack,$item);
  $stack = check_user_input($item, $key, $stack);
  }
@@ -43,14 +46,15 @@ $branches = 0;
 # item is the value, key is the name of the element
 function check_user_input($item, $key, $stack)
 {
-# check tainting directly on the item
+# TODO check tainting directly on the item, we need to confirm its useful
  is_it_tainted($item,$key,$stack);
 
-# if is object or array we continue to parse it
+# if is object or array we continue to parse it recursively
  if (is_object($item) || is_array($item))
 {
  foreach ($item as $subkey => $subitem)
  {
+# push the stack again to know where we are while browsing the array
  array_push($stack,$subitem);
  $stack = check_user_input($subitem,$subkey,$stack);
  }
@@ -60,13 +64,13 @@ return $stack;
 
 
 
-# function checking user input
+# function checking if it is tainted by user input
 function is_it_tainted($value,$key,$stack)
 {
  global $debug;
  global $taintedvariables;
 
-  # check user input, save tainted var, test sink and sanitize
+  # check user input, save tainted var if Expr_Assign, test sink and sanitize
   $inputArr = UserInput::getUserInput();
   if (in_array($value,$inputArr) or in_array($value,$taintedvariables))
   {
@@ -80,18 +84,18 @@ function is_it_tainted($value,$key,$stack)
     print("\n");
     if ($stack[0]->getType()=="Expr_Assign")
     {
-    print("Storing the tainted variable for later use: ");
+    print("Storing the tainted variable for later use because it is assigned:");
     print($stack[0]->var->name);
     array_push($taintedvariables,$stack[0]->var->name);
     print("\n");
-    } 
+    }
     # debug
     if ($debug == true){ print "[DEBUG] full stack \n"; var_dump($stack);}
 
-# vuln scan starts here
+# VULN SCAN starts here
 $sink=false;
 $sink = is_dangerous_sink($stack,$value);
-# need to double check this logic test
+# TODO need to double check this logic test
     if (($sink) and !(is_sanitized($stack,$value)))
     {
       print "VULNERABILITY FOUND: the tainted input $value goes to a dangerous sink function $sink without sanitization \n";
@@ -99,8 +103,9 @@ $sink = is_dangerous_sink($stack,$value);
       print "Vulnerability path: \n";
       print_r(array_values($stack));
     }
+    # clean the stack
     unset($stack);
-  # vuln scan stops here
+# vuln scan stops here
     }
   }
 }
@@ -113,7 +118,7 @@ function is_sanitized($stacktowalk,$taintsource)
 
 foreach ($stacktowalk as $key => $item)
 {
-  # add sanitized function based on config or pre-scan
+  # TODO add sanitized function based on config or pre-scan
   if ($item == "escapeshellarg")
   {
     print "SANITIZER FOUND: a sanitizer function (san) $item sanitized user input $taintsource . \n";
@@ -122,6 +127,7 @@ foreach ($stacktowalk as $key => $item)
 }
 
 # this function checks if the tainted input goes to a dangerous sink function
+# you give a stack to walk back and the taintsource for printing purposes only
 function is_dangerous_sink($stacktowalk,$taintsource)
 {
 # need to make a difference between FuncCall and other ?
@@ -133,11 +139,34 @@ function is_dangerous_sink($stacktowalk,$taintsource)
 foreach ($stacktowalk as $key => $item)
 {
   # add dangerous functions based on config
+
+  # echo vuln
+ if (get_class($item) == "PhpParser\Node\Stmt\Echo_")
+ {
+ $printable_item = $item->getType();
+ print "DANGEROUS FUNCTION FOUND: a dangerous function (dan) $printable_item was found to be tainted by user input $taintsource.\n";
+ return $printable_item;
+ }
+
+
+  # include vuln
+
+
+
+  # exit
+
+
+
+  # die
+
+
+
+
   $sinksArr = Sinks::getSinks();
   if (in_array($item,$sinksArr))
   {
     # we need to return the sink
-    print "DANGEROUS FUNCTION FOUND: a dangerous function (dan) $item was found to be tainted by user input $taintsource . \n";
+    print "DANGEROUS FUNCTION FOUND: a dangerous function (dan) $item was found to be tainted by user input $taintsource. \n";
     return $item;
   }
 }
