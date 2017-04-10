@@ -66,10 +66,9 @@ function is_it_tainted($value,$key,$stack)
  global $debug;
  global $taintedvariables;
 
-  # replace with all user inputs source
-
+  # check user input, save tainted var, test sink and sanitize
   $inputArr = UserInput::getUserInput();
-  if (in_array($value,$inputArr))
+  if (in_array($value,$inputArr) or in_array($value,$taintedvariables))
   {
     {
     echo "TAINT SOURCE FOUND: a taint source (taint) $value was found. \n";
@@ -79,14 +78,17 @@ function is_it_tainted($value,$key,$stack)
     print("The PHPParser Node type is (important to understand the synthax tree): ");
     print($stack[0]->getType());
     print("\n");
+    if ($stack[0]->getType()=="Expr_Assign")
+    {
     print("Storing the tainted variable for later use: ");
     print($stack[0]->var->name);
     array_push($taintedvariables,$stack[0]->var->name);
     print("\n");
-
+    } 
     # debug
     if ($debug == true){ print "[DEBUG] full stack \n"; var_dump($stack);}
 
+# vuln scan starts here
 $sink=false;
 $sink = is_dangerous_sink($stack,$value);
 # need to double check this logic test
@@ -97,9 +99,8 @@ $sink = is_dangerous_sink($stack,$value);
       print "Vulnerability path: \n";
       print_r(array_values($stack));
     }
-
-
     unset($stack);
+  # vuln scan stops here
     }
   }
 }
@@ -181,5 +182,10 @@ echo "Searching for tainted inputs by walking recursively the PHPParser array \n
 $taintedvariables = array();
 # main function start
 walk_phpparser_array($stmts);
+
+if ($debug == true)
+{
+  print("[DEBUG] tainted vars found: \n"); var_dump($taintedvariables);
+}
 
 # END

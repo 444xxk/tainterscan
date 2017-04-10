@@ -1,6 +1,6 @@
 <?php
 
-# testing detection with mutliple assignements
+# testing detection with multiple assignements
 
 $x = $_GET["y"];
 $a = $x ;
