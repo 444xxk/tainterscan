@@ -5,6 +5,7 @@ require("vendor/autoload.php");
 use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter;
+require __DIR__.'/conf/input.php';
 
 
 echo "v0.00 PHP simple tainterscanner\n";
@@ -75,9 +76,11 @@ return $stack;
 # function checking user input
 function is_it_tainted($value,$key,$stack)
 {
+
   # replace with all user inputs source
 
-  if ($value == "_GET")
+  $inputArr = UserInput::getUserInput();
+  if (in_array($value,$inputArr))
   {
     {
     echo "WARNING ! Tainted value detected. \n";
@@ -96,11 +99,15 @@ function is_it_tainted($value,$key,$stack)
 
     dangerous_sink($stack[0]);
     unset($stack);
-  }
+    }
   }
 }
 
 
+function dangerous_sink($value, $key)
+{
+
+}
 
 
 function is_sanitized($array)
@@ -120,6 +127,7 @@ foreach ($stack as $key => $item)
     print "Found a dangerous function (aka sink) $item tainted with user input.";
   }
 }
+<<<<<<< HEAD
 
 
 function vuln_description($input,$sink)
@@ -129,3 +137,6 @@ function vuln_description($input,$sink)
 }
 
 };
+=======
+}
+>>>>>>> fd2216bfc8611a1bb42fda5581d4288b02924610
