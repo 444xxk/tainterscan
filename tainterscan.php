@@ -19,7 +19,7 @@ $code = file_get_contents($argv[1]);
 # start phpparser
 $parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_PHP7);
 
-
+$debug = false;
 
 try {
     $stmts = $parser->parse($code);
@@ -35,6 +35,10 @@ echo "Searching for tainted inputs by walking recursively the PHPParser array \n
 walk_phpparser_array($stmts);
 
 
+
+
+############## FUNCTIONS
+
 # key is the element and item is the value of the element
 function walk_phpparser_array($phpparserarray)
 {
@@ -46,10 +50,12 @@ $stack = array();
  unset($stack);
  $stack = array();
  array_push($stack,$item);
-
- $stack = check_user_input($item, $key,$stack);
+ $stack = check_user_input($item, $key, $stack);
  }
 }
+
+
+
 
 # item is the value, key is the name of the element
 function check_user_input($item, $key, $stack)
@@ -59,8 +65,8 @@ function check_user_input($item, $key, $stack)
 
  if (is_object($item) || is_array($item))
  {
-
- is_it_tainted($item,$key,$stack);
+ # useless call i think
+ # is_it_tainted($item,$key,$stack);
  foreach ($item as $subkey => $subitem)
  {
  array_push($stack,$item);
@@ -76,7 +82,7 @@ return $stack;
 # function checking user input
 function is_it_tainted($value,$key,$stack)
 {
-
+ global $debug;
   # replace with all user inputs source
 
   $inputArr = UserInput::getUserInput();
@@ -122,13 +128,13 @@ foreach ($stack as $key => $item)
   # add dangerous functions based on config
   if ($item == "shell_exec")
   {
-    print "Found a dangerous function (aka sink) $item tainted with user input.";
+    print "Found a dangerous function (aka sink) $item which is tainted by user input.";
   }
 }
 
-function vuln_description($input,$sink)
+function vuln_info($input,$sink)
 {
-  print "$_GET linked to echo gives XSS;";
+  print "$_GET linked to echo gives XSS";
 # linking $input to $sink gives X vuln;
 # example $_GET to echo  is XSS vulnerability;
 }
