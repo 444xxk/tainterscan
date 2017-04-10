@@ -43,63 +43,64 @@ walk_phpparser_array($stmts);
 
 function walk_phpparser_array($phpparserarray)
 {
-
 $stack = array();
-
 
 foreach ($phpparserarray as $key => $item)
 {
 print "NEW BRANCH, so a new stack is created \n!";
 unset($stack);
 $stack = array();
-
 array_push($stack,$item);
+
 # debug
 #var_dump($value);
 $stack = check_user_input($item, $key,$stack);
 }
 }
 
-
-
 // walk array to check input
 function check_user_input($item, $key, $stack)
 {
 
-# create the stack to know where we are
-array_push($stack,$item);
-
 # check tainting
-is_it_tainted($item,$stack);
+is_it_tainted($item,$key,$stack);
 
 
 if (is_object($item) || is_array($item))
 {
-is_it_tainted($item,$stack);
+
+is_it_tainted($item,$key,$stack);
 foreach ($item as $subkey => $subitem)
 {
+array_push($stack,$item);
 $stack = check_user_input($subitem,$subkey,$stack);
 }
 }
 
 return $stack;
 
-} // end of check user input function
+}
 
 
 
-// checking user input
-function is_it_tainted($value,$stack)
+# function checking user input
+function is_it_tainted($value,$key,$stack)
 {
+  # replace with all user inputs source
 
   if ($value == "_GET")
   {
     {
-  // replace with all user inputs source
     echo "IS TAINTED DETECTED !!! >>>> \n";
     print "detected tainted : $value \n";
-    echo "the stack to here is ...";
-    var_dump($stack);
+    print "the stack to here is ...";
+    print_r($stack[0]);
+    # need to check if it s always build like this in phpparser
+    print "Calling function";
+    # $function = $stack[0] -> expr -> parts[0];
+    # print($function);
+    # print "with arguments";
+    # print($stack[0]["expr"]["args"]["value"]["var"]["name"]);
     unset($stack);
   }
   }
