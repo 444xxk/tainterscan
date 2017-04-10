@@ -20,6 +20,8 @@ $parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_
 # $nodeDumper = new PhpParser\NodeDumper;
 
 
+
+
 try {
     $stmts = $parser->parse($code);
     echo "[DEBUG] Printing the full PHPParser array :\n";
