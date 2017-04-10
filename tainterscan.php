@@ -74,15 +74,15 @@ function is_it_tainted($value,$key,$stack)
 
     if ($debug == true){ print "[DEBUG] full stack \n"; var_dump($stack);}
 
-    // print "calling function $stack[0]->exprs[1]->name with tainted input \n";
-
-# if is_dangerous && ! is_sanitized then VULN FOUND
-
-    if ((is_dangerous_sink($stack,$value)) and !(is_sanitized($stack,$value)))
+$sink=false;
+$sink = is_dangerous_sink($stack,$value);
+# need to double check this logic test
+    if (($sink) and !(is_sanitized($stack,$value)))
     {
-      print "VULNERABILITY FOUND: the tainted input $value goes to a dangerous sink without sanitization";
-      print "Vulnerability path:";
-      var_dump($stack);
+      print "VULNERABILITY FOUND: the tainted input $value goes to a dangerous sink function $sink without sanitization \n";
+      # need to output the source code based on the object start line number  to end line number 
+      print "Vulnerability path: \n";
+      print_r(array_values($stack));
     }
 
 
@@ -124,6 +124,7 @@ foreach ($stacktowalk as $key => $item)
   {
     # we need to return the sink
     print "DANGEROUS FUNCTION FOUND: a dangerous function (dan) $item was found to be tainted by user input $taintsource . \n";
+    return $item;
   }
 }
 }
