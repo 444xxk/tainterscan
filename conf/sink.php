@@ -27,7 +27,7 @@ class Sinks
     'exit',
     'die',
     'printf',
-    'vprintf',
+    'vprintf'
   );
 
   //SQL Injection
