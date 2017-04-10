@@ -1,6 +1,6 @@
 <?php
 
-// lib
+# lib
 require("vendor/autoload.php");
 use PhpParser\Error;
 use PhpParser\ParserFactory;
@@ -17,14 +17,14 @@ $code = file_get_contents($argv[1]);
 $parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_PHP7);
 
 # if you need Nodedumper view
-//$nodeDumper = new PhpParser\NodeDumper;
+# $nodeDumper = new PhpParser\NodeDumper;
 
 
-echo "[DEBUG] Pretty print Node dumper from PHPParser \n\n";
 try {
     $stmts = $parser->parse($code);
-    //var_dump($stmts);
-    //echo $nodeDumper->dump($stmts);
+    echo "[DEBUG] Printing the full PHPParser array :\n";
+    # var_dump($stmts);
+    # echo $nodeDumper->dump($stmts);
 } catch (PhpParser\Error $e) {
     echo 'Parse Error: ', $e->getMessage();
   };
@@ -32,12 +32,14 @@ try {
 
 
 
-// START SCAN FUNCTION HERE , entry is an array from phpparser
+# START SCAN FUNCTION HERE , entry is an array from phpparser
 echo "Searching for tainted inputs by walking recursively the PHPParser array \n\n";
 
 walk_phpparser_array($stmts);
 
 
+
+# key is the element and item is the value of the element
 
 function walk_phpparser_array($phpparserarray)
 {
@@ -47,8 +49,10 @@ $stack = array();
 
 foreach ($phpparserarray as $key => $item)
 {
-print "NEW BRANCH , so a new stack is created \n!";
-# reset stack
+print "NEW BRANCH, so a new stack is created \n!";
+unset($stack);
+$stack = array();
+
 array_push($stack,$item);
 # debug
 #var_dump($value);
@@ -66,15 +70,15 @@ function check_user_input($item, $key, $stack)
 array_push($stack,$item);
 
 # check tainting
-is_it_tainted($item);
+is_it_tainted($item,$stack);
 
 
 if (is_object($item) || is_array($item))
 {
-is_it_tainted($item);
+is_it_tainted($item,$stack);
 foreach ($item as $subkey => $subitem)
 {
-check_user_input($subitem,$subkey,$stack);
+$stack = check_user_input($subitem,$subkey,$stack);
 }
 }
 
@@ -85,10 +89,8 @@ return $stack;
 
 
 // checking user input
-function is_it_tainted($value)
+function is_it_tainted($value,$stack)
 {
-
-global $stack;
 
   if ($value == "_GET")
   {
