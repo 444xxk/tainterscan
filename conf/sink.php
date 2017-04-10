@@ -1,12 +1,12 @@
 <?php
 
-class UserInput
+class Sinks
 {
   public static function getSinks()
   {
     return array_merge(
-					self::$XSS,
-					self::$SQL,
+	  self::$XSS,
+	  self::$SQL,
           self::$XPATH,
           self::$HEADER,
           self::$UNSERI,
@@ -16,7 +16,7 @@ class UserInput
           self::$LDAP,
           self::$FILEDISC,
           self::$FILEMANI
-				);
+    );
   }
 
   //XSS
@@ -27,7 +27,7 @@ class UserInput
     'exit',
     'die',
     'printf',
-    'vprintf',
+    'vprintf'
   );
 
   //SQL Injection

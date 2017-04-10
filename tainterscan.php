@@ -5,13 +5,32 @@ require("vendor/autoload.php");
 use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter;
-
-# config
+# conf
 require __DIR__.'/conf/input.php';
+require __DIR__.'/conf/sink.php';
 
 #### BANNER
 echo "v0.01 PHP simple tainterscanner\n";
 echo "Usage: $argv[0] file.php [debug] \n\n\n";
+
+
+# getting the file to scan
+# TODO scan a folder recursively
+$code = file_get_contents($argv[1]);
+
+# start phpparser
+$parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_PHP7);
+
+$debug = false;
+
+try {
+    $stmts = $parser->parse($code);
+    if ($argv[2] == "debug"){ $debug = true; echo "[DEBUG] Printing the full PHPParser array :\n"; var_dump($stmts);}
+} catch (PhpParser\Error $e) {
+    echo 'Parse Error: ', $e->getMessage();
+  };
+
+
 
 
 ##### FUNCTIONS
@@ -119,7 +138,8 @@ function is_dangerous_sink($stacktowalk,$taintsource)
 foreach ($stacktowalk as $key => $item)
 {
   # add dangerous functions based on config
-  if ($item == "shell_exec")
+  $sinksArr = Sinks::getSinks();
+  if (in_array($item,$sinksArr))
   {
     print "DANGEROUS FUNCTION FOUND: a dangerous function (dan) $item was found to be tainted by user input $taintsource . \n";
   }
