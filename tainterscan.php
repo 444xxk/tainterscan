@@ -8,6 +8,7 @@ use PhpParser\PrettyPrinter;
 # conf
 require __DIR__.'/conf/input.php';
 require __DIR__.'/conf/sink.php';
+require __DIR__.'/conf/sanitizer.php';
 
 #### BANNER
 echo "v0.01 PHP simple tainterscanner\n";
