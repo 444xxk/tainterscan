@@ -13,6 +13,4 @@ include("scripts/" . $_GET['file']);
 
 //LFI limited
 include("scripts/" . $_GET['file'] . ".html");
-
-//test
 ?>
