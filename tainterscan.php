@@ -6,20 +6,24 @@ use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter;
 
-echo "v0.00 PHP simple tainterscanner \n";
+echo "v0.00 PHP simple tainterscanner\n";
 echo "usage $argv[0] file.php \n\n\n";
 
+# getting the file to scan
+# TODO scan a folder recursively
 $code = file_get_contents($argv[1]);
 
-
-
+# Start phpparser
 $parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_PHP7);
+
+# if you need Nodedumper view
 //$nodeDumper = new PhpParser\NodeDumper;
+
 
 echo "[DEBUG] Pretty print Node dumper from PHPParser \n\n";
 try {
     $stmts = $parser->parse($code);
-    var_dump($stmts);
+    //var_dump($stmts);
     //echo $nodeDumper->dump($stmts);
 } catch (PhpParser\Error $e) {
     echo 'Parse Error: ', $e->getMessage();
@@ -28,36 +32,40 @@ try {
 
 
 
-// START SCAN FUNCTION HERE , entry is an array
+// START SCAN FUNCTION HERE , entry is an array from phpparser
 echo "Searching for tainted inputs by walking recursively the PHPParser array \n\n";
 
-$stack = array();
 walk_phpparser_array($stmts);
 
 
 
 function walk_phpparser_array($phpparserarray)
 {
-global $stack;
+
+$stack = array();
+
+
 foreach ($phpparserarray as $key => $item)
 {
-print "NEW BRANCH \n!";
-//  echo "KEY:";
-//var_dump($item);
-unset($stack);
-$stack = array();
-//var_dump($value);
-check_user_input($item, $key);
+print "NEW BRANCH , so a new stack is created \n!";
+# reset stack
+array_push($stack,$item);
+# debug
+#var_dump($value);
+$stack = check_user_input($item, $key,$stack);
 }
 }
 
 
 
 // walk array to check input
-function check_user_input($item, $key)
+function check_user_input($item, $key, $stack)
 {
-global $stack;
+
+# create the stack to know where we are
 array_push($stack,$item);
+
+# check tainting
 is_it_tainted($item);
 
 
@@ -66,10 +74,11 @@ if (is_object($item) || is_array($item))
 is_it_tainted($item);
 foreach ($item as $subkey => $subitem)
 {
-check_user_input($subitem,$subkey);
+check_user_input($subitem,$subkey,$stack);
 }
 }
 
+return $stack;
 
 } // end of check user input function
 
@@ -85,8 +94,8 @@ global $stack;
   {
     {
   // replace with all user inputs source
-    echo "BETA MODE ***************** !!! IS TAINTED DETECTED !!! ***************** >>>> \n";
-    print "detected $value \n";
+    echo "IS TAINTED DETECTED !!! ***************** >>>> \n";
+    print "detected tainted : $value \n";
     echo "the stack to here is ...";
     var_dump($stack);
     unset($stack);
