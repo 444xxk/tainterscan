@@ -59,9 +59,8 @@ $branches = 0;
  }
 }
 
-
-
 # function which checks if there is user input inside
+
 # item is the value, key is the name of the element
 function check_user_input($item, $key, $stack)
 {
@@ -114,8 +113,6 @@ function is_it_tainted($value,$key,$stack)
 }
 
 
-
-
 function is_sanitized($array)
 {
 # if the stack goes through a sanitizer we stop
@@ -138,6 +135,7 @@ foreach ($stack as $key => $item)
     print "Found a dangerous function (aka sink) $item which is tainted by user input.";
   }
 }
+
 
 function vuln_info($input,$sink)
 {
