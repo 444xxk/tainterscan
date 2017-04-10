@@ -1,5 +1,5 @@
 <?php
-final class UserInput
+class UserInput
 {
 	public static $USERINPUT = array(
 		'_GET',
@@ -46,8 +46,8 @@ final class UserInput
 
   public static function getUserInput(){
 		return array_merge(
-					self::$V_USERINPUT ,
-					self::$V_SERVER_PARAMS
+					self::$USERINPUT ,
+					self::$SERVER_PARAMS
 				);
 	}
 }
