@@ -96,7 +96,7 @@ function is_it_tainted($value,$stack)
   {
     {
   // replace with all user inputs source
-    echo "IS TAINTED DETECTED !!! ***************** >>>> \n";
+    echo "IS TAINTED DETECTED !!! >>>> \n";
     print "detected tainted : $value \n";
     echo "the stack to here is ...";
     var_dump($stack);
