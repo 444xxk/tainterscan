@@ -19,6 +19,8 @@ echo "Usage: $argv[0] file.php [debug] \n\n\n";
 # this function walks the php parser array
 function walk_phpparser_array($phpparserarray)
 {
+#tainted variables
+global $taintedvariables;
 $stack = array();
 # counting branches
 $branches = 0;
@@ -62,6 +64,8 @@ return $stack;
 function is_it_tainted($value,$key,$stack)
 {
  global $debug;
+ global $taintedvariables;
+
   # replace with all user inputs source
 
   $inputArr = UserInput::getUserInput();
@@ -71,7 +75,16 @@ function is_it_tainted($value,$key,$stack)
     echo "TAINT SOURCE FOUND: a taint source (taint) $value was found. \n";
     print "The stack to this source is: \n";
     print_r($stack);
+    # testing
+    print("The PHPParser Node type is (important to understand the synthax tree): ");
+    print($stack[0]->getType());
+    print("\n");
+    print("Storing the tainted variable for later use: ");
+    print($stack[0]->var->name);
+    array_push($taintedvariables,$stack[0]->var->name);
+    print("\n");
 
+    # debug
     if ($debug == true){ print "[DEBUG] full stack \n"; var_dump($stack);}
 
 $sink=false;
@@ -80,7 +93,7 @@ $sink = is_dangerous_sink($stack,$value);
     if (($sink) and !(is_sanitized($stack,$value)))
     {
       print "VULNERABILITY FOUND: the tainted input $value goes to a dangerous sink function $sink without sanitization \n";
-      # need to output the source code based on the object start line number  to end line number 
+      # need to output the source code based on the object start line number  to end line number
       print "Vulnerability path: \n";
       print_r(array_values($stack));
     }
@@ -146,6 +159,7 @@ function explain_vuln($input,$sink)
 # getting the file to scan
 # TODO scan a folder recursively
 
+
 $code = file_get_contents($argv[1]);
 
 # start phpparser
@@ -154,7 +168,7 @@ $debug = false;
 
 try {
     $stmts = $parser->parse($code);
-    if ($argv[2] == "debug"){ $debug = true; echo "[DEBUG] Printing the full PHPParser array :\n"; var_dump($stmts);}
+    if (@$argv[2] == "debug"){ $debug = true; echo "[DEBUG] Printing the full PHPParser array :\n"; var_dump($stmts);}
 } catch (PhpParser\Error $e) {
     echo 'Parse Error: ', $e->getMessage();
   };
@@ -162,6 +176,9 @@ try {
 
 # START SCAN FUNCTION HERE , entry is an array from phpparser
 echo "Searching for tainted inputs by walking recursively the PHPParser array \n\n";
+# keeping tainted variables in reference
+# testing
+$taintedvariables = array();
 # main function start
 walk_phpparser_array($stmts);
 
