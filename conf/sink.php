@@ -7,15 +7,15 @@ class Sinks
     return array_merge(
 	  self::$XSS,
 	  self::$SQL,
-          self::$XPATH,
-          self::$HEADER,
-          self::$UNSERI,
-          self::$COMMEXE,
-          self::$CODEXE,
-          self::$FILEINC,
-          self::$LDAP,
-          self::$FILEDISC,
-          self::$FILEMANI
+    self::$XPATH,
+    self::$HEADER,
+    self::$UNSERI,
+    self::$COMMEXE,
+    self::$CODEXE,
+    self::$FILEINC,
+    self::$LDAP,
+    self::$FILEDISC,
+    self::$FILEMANI
     );
   }
 

@@ -182,6 +182,18 @@ function explain_vuln($input,$sink)
 # example $_GET to echo  is XSS vulnerability;
 }
 
+
+function print_lines_code()
+{
+/*
+$file = new SplFileObject("filename");
+if (!$file->eof()) {
+     $file->seek($lineNumber);
+     $contents = $file->current(); // $contents would hold the data from line x
+}
+*/
+}
+
 ##### END FUNCTIONS
 
 
