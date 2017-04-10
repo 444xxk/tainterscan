@@ -9,3 +9,12 @@ Compared to RIPS, WAP.jar or similar scanner, this script will try to be simpler
 How to use:
 
    php tainterscan.php test/simple.php
+
+# plan
+
+1. Create a db of dangerous classes
+2. Match all inputs based on conf/input.php with the classes
+3. If there is a match of dangerous class and input, not sanitized, shell_exec -> then it's tainted
+4. If point 3 applies but there is some strange sanitization then flag it separately
+
+
