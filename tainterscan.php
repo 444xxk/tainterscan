@@ -6,6 +6,7 @@ use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter;
 require __DIR__.'/conf/input.php';
+require __DIR__.'/conf/sink.php';
 
 
 echo "v0.00 PHP simple tainterscanner\n";
@@ -128,7 +129,8 @@ function is_dangerous_sink($stack)
 foreach ($stack as $key => $item)
 {
   # add dangerous functions based on config
-  if ($item == "shell_exec")
+  $sinksArr = Sinks::getSinks();
+  if (in_array($item,$sinksArr))
   {
     print "VULNERABILITY FOUND: a dangerous function (sink) $item which is tainted by user input. \n";
   }

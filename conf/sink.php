@@ -1,6 +1,6 @@
 <?php
 
-class UserInput
+class Sinks
 {
   public static function getSinks()
   {
