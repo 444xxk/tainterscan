@@ -1,0 +1,4 @@
+# example of db we want to use for storing classes flagged as tainted
+# Method DangerousMethod inside class DangerousClass is tainted
+DangerousClass,Dangerousmethod
+RequestClass,GetParams
