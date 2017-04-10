@@ -6,6 +6,7 @@ use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter;
 
+
 echo "v0.00 PHP simple tainterscanner\n";
 echo "usage $argv[0] file.php \n\n\n";
 
@@ -18,7 +19,6 @@ $parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_
 
 # if you need Nodedumper view
 # $nodeDumper = new PhpParser\NodeDumper;
-
 
 
 
@@ -93,8 +93,9 @@ return $stack;
 // checking user input
 function is_it_tainted($value,$stack)
 {
+  $inputArr = UserInput::$V_USERINPUT;
 
-  if ($value == "_GET")
+  if (in_array($value,$inputArr))
   {
     {
   // replace with all user inputs source
@@ -103,14 +104,11 @@ function is_it_tainted($value,$stack)
     echo "the stack to here is ...";
     var_dump($stack);
     unset($stack);
-  }
+    }
   }
 
 
 }
-
-
-
 
 
 function dangerous_sink($value, $key)
