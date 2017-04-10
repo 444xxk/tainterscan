@@ -9,7 +9,7 @@ require __DIR__.'/conf/input.php';
 
 
 echo "v0.00 PHP simple tainterscanner\n";
-echo "usage $argv[0] file.php \n\n\n";
+echo "usage $argv[0] file.php [debug]\n\n\n";
 
 
 # getting the file to scan
@@ -19,27 +19,25 @@ $code = file_get_contents($argv[1]);
 # start phpparser
 $parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_PHP7);
 
-# if you need Nodedumper view but var_dump is the same
-# $nodeDumper = new PhpParser\NodeDumper;
-
+$debug = false;
 
 try {
     $stmts = $parser->parse($code);
-    echo "[DEBUG] Printing the full PHPParser array :\n";
-    # var_dump($stmts);
-    # echo $nodeDumper->dump($stmts);
+    if ($argv[2] == "debug"){ $debug = true; echo "[DEBUG] Printing the full PHPParser array :\n"; var_dump($stmts);}
 } catch (PhpParser\Error $e) {
     echo 'Parse Error: ', $e->getMessage();
   };
 
 
-
 # START SCAN FUNCTION HERE , entry is an array from phpparser
 echo "Searching for tainted inputs by walking recursively the PHPParser array \n\n";
-
 # main function
 walk_phpparser_array($stmts);
 
+
+
+
+############## FUNCTIONS
 
 # key is the element and item is the value of the element
 function walk_phpparser_array($phpparserarray)
@@ -52,12 +50,11 @@ $stack = array();
  unset($stack);
  $stack = array();
  array_push($stack,$item);
-
- # debug
- #var_dump($value);
- $stack = check_user_input($item, $key,$stack);
+ $stack = check_user_input($item, $key, $stack);
  }
 }
+
+
 
 # item is the value, key is the name of the element
 function check_user_input($item, $key, $stack)
@@ -67,8 +64,8 @@ function check_user_input($item, $key, $stack)
 
  if (is_object($item) || is_array($item))
  {
-
- is_it_tainted($item,$key,$stack);
+ # useless call i think
+ # is_it_tainted($item,$key,$stack);
  foreach ($item as $subkey => $subitem)
  {
  array_push($stack,$item);
@@ -84,7 +81,7 @@ return $stack;
 # function checking user input
 function is_it_tainted($value,$key,$stack)
 {
-
+ global $debug;
   # replace with all user inputs source
 
   $inputArr = UserInput::getUserInput();
@@ -95,6 +92,8 @@ function is_it_tainted($value,$key,$stack)
     print "Detected tainted source : $value \n";
     print "The stack to here is: \n";
     print_r($stack[0]);
+
+    if ($debug == true){ print "[DEBUG] full stack"; var_dump($stack);}
 
     # need to check if it s always build like this in phpparser first
     # print a pretty path to where we are
@@ -112,12 +111,6 @@ function is_it_tainted($value,$key,$stack)
 }
 
 
-function dangerous_sink($value, $key)
-{
-
-}
-
-
 function is_sanitized($array)
 {
 # if the stack goes through a sanitizer we stop
@@ -129,11 +122,19 @@ function dangerous_sink($stack)
 # need to walk the array
 foreach ($stack as $key => $item)
 {
+  # add dangerous functions based on config
   if ($item == "shell_exec")
   {
-    print "Found a dangerous function (aka sink) with user input:";
-    var_dump($value);
+    print "Found a dangerous function (aka sink) $item which is tainted by user input.";
   }
 }
 
+
+function vuln_info($input,$sink)
+{
+  print "$_GET linked to echo gives XSS";
+# linking $input to $sink gives X vuln;
+# example $_GET to echo  is XSS vulnerability;
 }
+
+};

@@ -1,0 +1,3 @@
+# example of db we want to use for storing classes flagged as dangerous
+# class Zzz is using dangerous functions inside method 'method'
+DangerousClass,method,shell_exec
