@@ -8,7 +8,7 @@ use PhpParser\PrettyPrinter;
 
 
 echo "v0.00 PHP simple tainterscanner\n";
-echo "usage $argv[0] file.php \n\n\n";
+echo "usage $argv[0] file.php [debug]\n\n\n";
 
 
 # getting the file to scan
@@ -18,24 +18,18 @@ $code = file_get_contents($argv[1]);
 # start phpparser
 $parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_PHP7);
 
-# if you need Nodedumper view but var_dump is the same
-# $nodeDumper = new PhpParser\NodeDumper;
 
 
 try {
     $stmts = $parser->parse($code);
-    echo "[DEBUG] Printing the full PHPParser array :\n";
-    # var_dump($stmts);
-    # echo $nodeDumper->dump($stmts);
+    if ($argv[2] == "debug"){ $debug = true; echo "[DEBUG] Printing the full PHPParser array :\n"; var_dump($stmts);}
 } catch (PhpParser\Error $e) {
     echo 'Parse Error: ', $e->getMessage();
   };
 
 
-
 # START SCAN FUNCTION HERE , entry is an array from phpparser
 echo "Searching for tainted inputs by walking recursively the PHPParser array \n\n";
-
 # main function
 walk_phpparser_array($stmts);
 
@@ -52,8 +46,6 @@ $stack = array();
  $stack = array();
  array_push($stack,$item);
 
- # debug
- #var_dump($value);
  $stack = check_user_input($item, $key,$stack);
  }
 }
@@ -122,13 +114,18 @@ function dangerous_sink($stack)
 # need to walk the array
 foreach ($stack as $key => $item)
 {
+  # add dangerous functions based on config
   if ($item == "shell_exec")
   {
-    print "Found a dangerous function (aka sink) with user input:";
-    var_dump($value);
+    print "Found a dangerous function (aka sink) $item tainted with user input.";
   }
 }
 
 
+function vuln_description($input,$sink)
+{
+# linking $input to $sink gives X vuln;
+# example $_GET to echo  is XSS vulnerability;
+}
 
 };
