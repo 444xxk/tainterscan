@@ -2,6 +2,23 @@
 
 class UserInput
 {
+  public static function getSinks()
+  {
+    return array_merge(
+					self::$XSS,
+					self::$SQL,
+          self::$XPATH,
+          self::$HEADER,
+          self::$UNSERI,
+          self::$COMMEXE,
+          self::$CODEXE,
+          self::$FILEINC,
+          self::$LDAP,
+          self::$FILEDISC,
+          self::$FILEMANI
+				);
+  }
+
   //XSS
   public static $XSS = array(
     'echo',
@@ -13,9 +30,79 @@ class UserInput
     'vprintf',
   );
 
+  //SQL Injection
+  public static $SQL = array(
+    'dba_open',
+  	'dba_popen',
+  	'dba_insert',
+  	'dba_fetch',
+  	'dba_delete',
+  	'dbx_query',
+  	'odbc_do',
+  	'odbc_exec',
+  	'odbc_execute',
+  	'db2_exec',
+  	'db2_execute',
+  	'fbsql_db_query',
+  	'fbsql_query',
+  	'ibase_query',
+  	'ibase_execute',
+  	'ifx_query',
+  	'ifx_do',
+  	'ingres_query',
+  	'ingres_execute',
+  	'ingres_unbuffered_query',
+  	'msql_db_query',
+  	'msql_query',
+  	'msql',
+  	'mssql_query',
+  	'mssql_execute',
+  	'mysql_db_query',
+  	'mysql_query',
+  	'mysql_unbuffered_query',
+  	'mysqli_stmt_execute',
+  	'mysqli_query',
+  	'mysqli_real_query',
+  	'mysqli_master_query',
+  	'oci_execute',
+  	'ociexecute',
+  	'ovrimos_exec',
+  	'ovrimos_execute',
+  	'ora_do',
+  	'ora_exec',
+  	'pg_query',
+  	'pg_send_query',
+  	'pg_send_query_params',
+  	'pg_send_prepare',
+  	'pg_prepare',
+  	'sqlite_open',
+  	'sqlite_popen',
+  	'sqlite_array_query',
+  	'arrayQuery',
+  	'singleQuery',
+  	'sqlite_query',
+  	'sqlite_exec',
+  	'sqlite_single_query',
+  	'sqlite_unbuffered_query',
+  	'sybase_query',
+  	'sybase_unbuffered_query'
+  );
+
+  // XPath Injection
+  public static $XPATH = array(
+     'xpath_eval',
+     'xpath_eval_expression',
+     'xptr_eval'
+  );
+
   // HTTP response splitting
   public static $HEADER = array(
      'header'
+  );
+
+  // Unserialize
+  public static $UNSERI = array(
+     'unserialize'
   );
 
   //Command execution
@@ -37,7 +124,6 @@ class UserInput
 
   // Code execution
   public static $CODEXE = array(
-
     	'array_diff_uassoc',
     	'array_diff_ukey',
     	'array_filter',
@@ -122,9 +208,20 @@ class UserInput
     'virtual'
   );
 
+  // LDAP Injection
+  public static $LDAP = array(
+    'ldap_add',
+  	'ldap_delete',
+  	'ldap_list',
+  	'ldap_read',
+  	'ldap_search'
+  );
+
+
+
   // File Disclosure
   public static $FILEDISC = array(
-        'bzread',
+    'bzread',
   	'bzflush',
   	'dio_read',
   	'eio_readdir',
@@ -181,7 +278,7 @@ class UserInput
 
   // File Manipulation
   public static $FILEMANI = array(
-        'bzwrite',
+    'bzwrite',
   	'chmod',
   	'chgrp',
   	'chown',
@@ -225,5 +322,7 @@ class UserInput
   	'xdiff_file_rabdiff',
   	'yaml_emit_file'
   );
+
+
 
 }
