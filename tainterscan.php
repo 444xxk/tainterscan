@@ -9,7 +9,7 @@ require __DIR__.'/conf/input.php';
 
 
 echo "v0.00 PHP simple tainterscanner\n";
-echo "usage $argv[0] file.php [debug]\n\n\n";
+echo "usage $argv[0] file.php [debug] \n\n\n";
 
 
 # getting the file to scan
@@ -43,12 +43,17 @@ walk_phpparser_array($stmts);
 function walk_phpparser_array($phpparserarray)
 {
 $stack = array();
+# counting branches
+$branches = 0;
 
  foreach ($phpparserarray as $key => $item)
  {
- print "NEW BRANCH, so a new stack is created \n!";
+ $branches = $branches +1;
+ print "NEW BRANCH # $branches, new stack is created. \n";
+ # new stack
  unset($stack);
  $stack = array();
+ # push first item to stack
  array_push($stack,$item);
  $stack = check_user_input($item, $key, $stack);
  }
@@ -56,7 +61,7 @@ $stack = array();
 
 
 
-
+# function which checks if there is user input inside
 # item is the value, key is the name of the element
 function check_user_input($item, $key, $stack)
 {
@@ -92,20 +97,17 @@ function is_it_tainted($value,$key,$stack)
     echo "WARNING ! Tainted value detected. \n";
     print "Detected tainted source : $value \n";
     print "The stack to here is: \n";
-    print_r($stack[0]);
+    print_r($stack);
 
-    if ($debug == true){ print "[DEBUG] full stack"; var_dump($stack);}
+    if ($debug == true){ print "[DEBUG] full stack \n"; var_dump($stack);}
 
-    # need to check if it s always build like this in phpparser first
-    # print a pretty path to where we are
-    # print "Calling function : ";
-    # $function = $stack[0] -> expr -> parts[0];
-    # print($function);
-    # print "with arguments : ";
-    # print($stack[0]["expr"]["args"]["value"]["var"]["name"]);
-    # print "this function is tainted";
+    print "calling function $stack[0]->exprs[1]->name with tainted input \n";
 
-    dangerous_sink($stack[0]);
+# if is_dangerous && ! is_sanitized then VULN FOUND
+
+    is_dangerous_sink($stack);
+    is_sanitized($stack);
+
     unset($stack);
     }
   }
@@ -120,9 +122,14 @@ function is_sanitized($array)
 }
 
 
-function dangerous_sink($stack)
+function is_dangerous_sink($stack)
 {
 # need to walk the array
+
+
+# if object is PHP Parser \ Object \ Include
+
+# if object is PHP Parser \ Object \ FuncCall
 foreach ($stack as $key => $item)
 {
   # add dangerous functions based on config
