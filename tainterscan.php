@@ -7,19 +7,20 @@ use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter;
 require __DIR__.'/conf/input.php';
 
+
 echo "v0.00 PHP simple tainterscanner\n";
 echo "usage $argv[0] file.php \n\n\n";
+
 
 # getting the file to scan
 # TODO scan a folder recursively
 $code = file_get_contents($argv[1]);
 
-# Start phpparser
+# start phpparser
 $parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_PHP7);
 
-# if you need Nodedumper view
+# if you need Nodedumper view but var_dump is the same
 # $nodeDumper = new PhpParser\NodeDumper;
-
 
 
 try {
@@ -33,54 +34,49 @@ try {
 
 
 
-
 # START SCAN FUNCTION HERE , entry is an array from phpparser
 echo "Searching for tainted inputs by walking recursively the PHPParser array \n\n";
 
+# main function
 walk_phpparser_array($stmts);
 
 
-
 # key is the element and item is the value of the element
-
 function walk_phpparser_array($phpparserarray)
 {
 $stack = array();
 
-foreach ($phpparserarray as $key => $item)
-{
-print "NEW BRANCH, so a new stack is created \n!";
-unset($stack);
-$stack = array();
-array_push($stack,$item);
+ foreach ($phpparserarray as $key => $item)
+ {
+ print "NEW BRANCH, so a new stack is created \n!";
+ unset($stack);
+ $stack = array();
+ array_push($stack,$item);
 
-# debug
-#var_dump($value);
-$stack = check_user_input($item, $key,$stack);
-}
+ # debug
+ #var_dump($value);
+ $stack = check_user_input($item, $key,$stack);
+ }
 }
 
-// walk array to check input
+# item is the value, key is the name of the element
 function check_user_input($item, $key, $stack)
 {
-
 # check tainting
-is_it_tainted($item,$key,$stack);
+ is_it_tainted($item,$key,$stack);
 
+ if (is_object($item) || is_array($item))
+ {
 
-if (is_object($item) || is_array($item))
-{
-
-is_it_tainted($item,$key,$stack);
-foreach ($item as $subkey => $subitem)
-{
-array_push($stack,$item);
-$stack = check_user_input($subitem,$subkey,$stack);
-}
+ is_it_tainted($item,$key,$stack);
+ foreach ($item as $subkey => $subitem)
+ {
+ array_push($stack,$item);
+ $stack = check_user_input($subitem,$subkey,$stack);
+ }
 }
 
 return $stack;
-
 }
 
 
@@ -95,32 +91,48 @@ function is_it_tainted($value,$key,$stack)
   if (in_array($value,$inputArr))
   {
     {
-    echo "IS TAINTED DETECTED !!! >>>> \n";
-    print "detected tainted : $value \n";
-    print "the stack to here is ...";
+    echo "WARNING ! Tainted value detected. \n";
+    print "Detected tainted source : $value \n";
+    print "The stack to here is: \n";
     print_r($stack[0]);
-    # need to check if it s always build like this in phpparser
-    print "Calling function";
+
+    # need to check if it s always build like this in phpparser first
+    # print a pretty path to where we are
+    # print "Calling function : ";
     # $function = $stack[0] -> expr -> parts[0];
     # print($function);
-    # print "with arguments";
+    # print "with arguments : ";
     # print($stack[0]["expr"]["args"]["value"]["var"]["name"]);
+    # print "this function is tainted";
+
+    dangerous_sink($stack[0]);
     unset($stack);
     }
   }
-
-
 }
 
 
 function dangerous_sink($value, $key)
 {
 
-if ($value == "shell_exec")
-{
-  echo "found sink >>>>>>>>>>>>>>>>>> \n";
-  var_dump($value);
 }
 
 
-};
+function is_sanitized($array)
+{
+# if the stack goes through a sanitizer we stop
+}
+
+
+function dangerous_sink($stack)
+{
+# need to walk the array
+foreach ($stack as $key => $item)
+{
+  if ($item == "shell_exec")
+  {
+    print "Found a dangerous function (aka sink) with user input:";
+    var_dump($value);
+  }
+}
+}
