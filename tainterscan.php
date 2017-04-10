@@ -14,30 +14,8 @@ echo "v0.01 PHP simple tainterscanner\n";
 echo "Usage: $argv[0] file.php [debug] \n\n\n";
 
 
-# getting the file to scan
-# TODO scan a folder recursively
-$code = file_get_contents($argv[1]);
+############ FUNCTIONS
 
-# start phpparser
-$parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_PHP7);
-
-$debug = false;
-
-try {
-    $stmts = $parser->parse($code);
-    if ($argv[2] == "debug"){ $debug = true; echo "[DEBUG] Printing the full PHPParser array :\n"; var_dump($stmts);}
-} catch (PhpParser\Error $e) {
-    echo 'Parse Error: ', $e->getMessage();
-  };
-
-
-
-
-##### FUNCTIONS
-
-############## FUNCTIONS
-
-# key is the element and item is the value of the element
 # this function walks the php parser array
 function walk_phpparser_array($phpparserarray)
 {
@@ -100,8 +78,13 @@ function is_it_tainted($value,$key,$stack)
 
 # if is_dangerous && ! is_sanitized then VULN FOUND
 
-    is_dangerous_sink($stack,$value);
-    is_sanitized($stack,$value);
+    if ((is_dangerous_sink($stack,$value)) and !(is_sanitized($stack,$value)))
+    {
+      print "VULNERABILITY FOUND: the tainted input $value goes to a dangerous sink without sanitization";
+      print "Vulnerability path:";
+      var_dump($stack);
+    }
+
 
     unset($stack);
     }
@@ -122,8 +105,6 @@ foreach ($stacktowalk as $key => $item)
     print "SANITIZER FOUND: a sanitizer function (san) $item sanitized user input $taintsource . \n";
   }
 }
-
-
 }
 
 # this function checks if the tainted input goes to a dangerous sink function
@@ -141,10 +122,11 @@ foreach ($stacktowalk as $key => $item)
   $sinksArr = Sinks::getSinks();
   if (in_array($item,$sinksArr))
   {
+    # we need to return the sink
     print "DANGEROUS FUNCTION FOUND: a dangerous function (dan) $item was found to be tainted by user input $taintsource . \n";
   }
 }
-
+}
 
 # this function explains the found vulnerability
 function explain_vuln($input,$sink)
@@ -159,15 +141,14 @@ function explain_vuln($input,$sink)
 
 
 
-
-##### MAIN FUNCTION
+############ MAIN FUNCTION
 # getting the file to scan
 # TODO scan a folder recursively
+
 $code = file_get_contents($argv[1]);
 
 # start phpparser
 $parser = (new PhpParser\ParserFactory)->create(PhpParser\ParserFactory::PREFER_PHP7);
-
 $debug = false;
 
 try {
@@ -182,6 +163,5 @@ try {
 echo "Searching for tainted inputs by walking recursively the PHPParser array \n\n";
 # main function start
 walk_phpparser_array($stmts);
-};
 
 # END
