@@ -88,6 +88,8 @@ function is_it_tainted($value,$key,$stack)
     print "The stack to here is: \n";
     print_r($stack[0]);
 
+    if ($debug == true){ print "[DEBUG] full stack"; var_dump($stack);}
+
     # need to check if it s always build like this in phpparser first
     # print a pretty path to where we are
     # print "Calling function : ";
@@ -104,10 +106,6 @@ function is_it_tainted($value,$key,$stack)
 }
 
 
-function dangerous_sink($value, $key)
-{
-
-}
 
 
 function is_sanitized($array)
@@ -127,16 +125,12 @@ foreach ($stack as $key => $item)
     print "Found a dangerous function (aka sink) $item tainted with user input.";
   }
 }
-<<<<<<< HEAD
-
 
 function vuln_description($input,$sink)
 {
+  print "$_GET linked to echo gives XSS;";
 # linking $input to $sink gives X vuln;
 # example $_GET to echo  is XSS vulnerability;
 }
 
 };
-=======
-}
->>>>>>> fd2216bfc8611a1bb42fda5581d4288b02924610
