@@ -60,7 +60,6 @@ $branches = 0;
 }
 
 # function which checks if there is user input inside
-
 # item is the value, key is the name of the element
 function check_user_input($item, $key, $stack)
 {
@@ -73,11 +72,10 @@ function check_user_input($item, $key, $stack)
  # is_it_tainted($item,$key,$stack);
  foreach ($item as $subkey => $subitem)
  {
- array_push($stack,$item);
+ array_push($stack,$subitem);
  $stack = check_user_input($subitem,$subkey,$stack);
  }
 }
-
 return $stack;
 }
 
@@ -100,12 +98,12 @@ function is_it_tainted($value,$key,$stack)
 
     if ($debug == true){ print "[DEBUG] full stack \n"; var_dump($stack);}
 
-    print "calling function $stack[0]->exprs[1]->name with tainted input \n";
+    // print "calling function $stack[0]->exprs[1]->name with tainted input \n";
 
 # if is_dangerous && ! is_sanitized then VULN FOUND
 
     is_dangerous_sink($stack);
-    is_sanitized($stack);
+    //is_sanitized($stack);
 
     unset($stack);
     }
@@ -132,9 +130,10 @@ foreach ($stack as $key => $item)
   # add dangerous functions based on config
   if ($item == "shell_exec")
   {
-    print "Found a dangerous function (aka sink) $item which is tainted by user input.";
+    print "VULNERABILITY FOUND: a dangerous function (sink) $item which is tainted by user input. \n";
   }
 }
+
 
 
 function vuln_info($input,$sink)
