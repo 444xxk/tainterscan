@@ -4,35 +4,35 @@ class UserInput
 {
   //XSS
   public static $XSS = array(
-		'echo',
-		'print',
+    'echo',
+    'print',
     'print_r',
     'exit',
     'die',
     'printf',
     'vprintf',
-	);
+  );
 
   // HTTP response splitting
   public static $HEADER = array(
-		'header'
-	);
+     'header'
+  );
 
   //Command execution
   public static $COMMEXE = array(
     'backticks',
-  	'exec',
-  	'expect_popen',
-  	'passthru',
-  	'pcntl_exec',
-  	'popen',
-  	'proc_open',
-  	'shell_exec',
-  	'system',
-  	'mail',
-  	'mb_send_mail',
-  	'w32api_invoke_function',
-  	'w32api_register_function'
+    'exec',
+    'expect_popen',
+    'passthru',
+    'pcntl_exec',
+    'popen',
+    'proc_open',
+    'shell_exec',
+    'system',
+    'mail',
+    'mb_send_mail',
+    'w32api_invoke_function',
+    'w32api_register_function'
   );
 
   // Code execution
@@ -124,7 +124,7 @@ class UserInput
 
   // File Disclosure
   public static $FILEDISC = array(
-    'bzread',
+        'bzread',
   	'bzflush',
   	'dio_read',
   	'eio_readdir',
@@ -181,7 +181,7 @@ class UserInput
 
   // File Manipulation
   public static $FILEMANI = array(
-    'bzwrite',
+        'bzwrite',
   	'chmod',
   	'chgrp',
   	'chown',
