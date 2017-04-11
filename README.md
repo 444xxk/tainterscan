@@ -1,6 +1,6 @@
 # tainterscan
 
-Using phpparser lib, this .php which tries to identify where user input ("tainted" like $_GET) reach dangerous sinks (like shell_exec) without sanitization.
+Using phpparser lib, this .php script tries to identify where user input ("tainted" like $_GET) reach dangerous sinks (like shell_exec) without sanitization.
 
 This script was born after reading Wooyun blog .php scanner simple example and trying to modify it.
 
